@@ -4,6 +4,7 @@ plugins {
 }
 
 apply plugin: "com.android.library"
+apply plugin: 'com.vanniktech.maven.publish'
 
 ext {
     group 'com.github.tommyettinger'
@@ -16,7 +17,7 @@ ext {
     siteUrl = 'https://github.com/barsoosayque/libgdx-oboe'
     gitUrl = 'https://github.com/barsoosayque/libgdx-oboe.git'
 
-    libraryVersion = '0.3.0.1-SNAPSHOT'
+    libraryVersion = "$VERSION_NAME"
     version = libraryVersion
 
     developerId = 'barsoosayque'
