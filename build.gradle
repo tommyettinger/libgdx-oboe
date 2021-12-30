@@ -2,9 +2,8 @@ buildscript {
     ext {
         kotlinVersion = '1.5.31'
 
-        androidPluginVersion = '7.0.2'
-        ktxVersion = '1.10.0-b2'
-//        dokkaVersion = '1.4.30'
+        androidPluginVersion = '7.0.4'
+        ktxVersion = '1.10.0-b4'
 
         gdxVersion = '1.10.0'
 
@@ -16,11 +15,11 @@ buildscript {
         mavenLocal()
         mavenCentral()
         google()
-        maven { url "https://kotlin.bintray.com/kotlinx" }
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
     }
     dependencies {
         classpath "com.android.tools.build:gradle:$androidPluginVersion"
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.18.0'
     }
 }
 
@@ -32,6 +31,5 @@ allprojects {
         mavenCentral()
         google()
         maven { url "https://oss.sonatype.org/content/repositories/releases/" }
-        maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 }

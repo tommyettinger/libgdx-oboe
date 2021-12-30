@@ -1,12 +1,13 @@
 plugins {
     id "org.jetbrains.kotlin.android" version "$kotlinVersion"
-    id 'maven-publish'
+    id 'com.vanniktech.maven.publish'
 }
 
 apply plugin: "com.android.library"
 
 ext {
-    publishedGroupId = 'com.github.barsoosayque'
+    group 'com.github.tommyettinger'
+    publishedGroupId = 'com.github.tommyettinger'
     libraryName = 'libGDX Oboe'
     artifact = 'libgdxoboe'
 
@@ -15,7 +16,8 @@ ext {
     siteUrl = 'https://github.com/barsoosayque/libgdx-oboe'
     gitUrl = 'https://github.com/barsoosayque/libgdx-oboe.git'
 
-    libraryVersion = '0.3.0'
+    libraryVersion = '0.3.0.1-SNAPSHOT'
+    version = libraryVersion
 
     developerId = 'barsoosayque'
     developerName = 'barsoosayque'
@@ -24,6 +26,27 @@ ext {
     licenseName = 'The MIT License'
     licenseUrl = 'https://opensource.org/licenses/MIT'
     allLicenses = ["MIT"]
+}
+
+// Disable JDK 8's doclint
+// http://blog.joda.org/2014/02/turning-off-doclint-in-jdk-8-javadoc.html
+if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+        tasks.withType(Javadoc) {
+            // The -quiet is because of some sort of weird JDK JavaCompiler bug:
+            // https://discuss.gradle.org/t/passing-arguments-to-compiler-and-javadoc/1661
+            options.addStringOption('Xdoclint:none,-missing', '-quiet')
+            options.tags('apiNote:a:"API Note"', 'implSpec:a:"Implementation Requirements"', 'implNote:a:"Implementation Note"')
+        }
+    }
+}
+
+if(JavaVersion.current().isJava9Compatible()) {
+    allprojects {
+        tasks.withType(JavaCompile) {
+            options.release.set(8)
+        }
+    }
 }
 
 configurations { natives }
@@ -60,5 +83,3 @@ android {
         }
     }
 }
-
-apply from: "github.gradle"
