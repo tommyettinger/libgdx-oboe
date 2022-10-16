@@ -7,7 +7,8 @@ apply plugin: "com.android.application"
 configurations { natives }
 
 dependencies {
-    implementation project(":library")
+//    implementation project(":library")
+    implementation "com.github.tommyettinger:libgdxoboe:0.3.0.3-SNAPSHOT"
     implementation "com.badlogicgames.gdx:gdx-backend-android:$gdxVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation group: 'io.github.libktx', name: 'ktx-scene2d', version: "$ktxVersion"
