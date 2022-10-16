@@ -32,8 +32,8 @@ codec_result create_codec(const format_context_ptr &format_ctx) {
                           av_err_str(error));
     }
 
-    const AVCodec *codec = nullptr;
-    const AVCodecParameters *codec_params = nullptr;
+    AVCodec *codec = nullptr;
+    AVCodecParameters *codec_params = nullptr;
     int stream_index = -1;
 
     // Find first audio stream
@@ -71,8 +71,8 @@ codec_result create_codec(const format_context_ptr &format_ctx) {
 
         // WAV uses pcm_s16le codec and channel layout is 0.
         // more here https://stackoverflow.com/a/20049638
-        if ( codec_ctx->ch_layout.order == AV_CHANNEL_ORDER_UNSPEC )
-            av_channel_layout_default( &codec_ctx->ch_layout, codec_ctx->ch_layout.nb_channels );
+        if ( codec_ctx->channel_layout == 0 )
+            codec_ctx->channel_layout = av_get_default_channel_layout( codec_ctx->channels );
 
         return ok(std::make_pair(make_codec_context(codec_ctx), stream_index));
     } else {
@@ -82,28 +82,29 @@ codec_result create_codec(const format_context_ptr &format_ctx) {
 
 swr_result create_swr(const codec_context_ptr &codec_ctx, int stream_index) {
     frame_ptr iframe = make_frame();
-    av_channel_layout_copy( &iframe->ch_layout, &codec_ctx->ch_layout );
+    iframe->channel_layout = codec_ctx->channel_layout;
     iframe->sample_rate = codec_ctx->sample_rate;
     iframe->format = codec_ctx->sample_fmt;
+    iframe->channels = codec_ctx->channels;
 
-    debug("audio_decoder: iframe config:\nsample_rate: {}\nformat: {}\nchannels: {}",
-          iframe->sample_rate, iframe->format, iframe->ch_layout.nb_channels );
+    debug("audio_decoder: iframe config:\nchannel_layout: {}\nsample_rate: {}\nformat: {}\nchannels: {}",
+          iframe->channel_layout, iframe->sample_rate, iframe->format, iframe->channels);
 
     frame_ptr oframe = make_frame();
     // TODO: remove hardcoded channels
-    oframe->ch_layout = AV_CHANNEL_LAYOUT_STEREO;
+    oframe->channel_layout = AV_CH_LAYOUT_STEREO;
     oframe->sample_rate = 44100;
     oframe->format = AV_SAMPLE_FMT_S16;
+    oframe->channels = av_get_channel_layout_nb_channels(oframe->channel_layout);
 
-    debug("audio_decoder: oframe config:\nsample_rate: {}\nformat: {}\nchannels: {}",
-          oframe->sample_rate, oframe->format, oframe->ch_layout.nb_channels);
+    debug("audio_decoder: oframe config:\nchannel_layout: {}\nsample_rate: {}\nformat: {}\nchannels: {}",
+          oframe->channel_layout, oframe->sample_rate, oframe->format, oframe->channels);
 
     swr_context_ptr ctx = make_swr_context();
-    auto* raw_ctx = ctx.get();
-    swr_alloc_set_opts2(&raw_ctx,
-                       &oframe->ch_layout, static_cast<AVSampleFormat>(oframe->format),
+    swr_alloc_set_opts(ctx.get(),
+                       oframe->channel_layout, static_cast<AVSampleFormat>(oframe->format),
                        oframe->sample_rate,
-                       &iframe->ch_layout, static_cast<AVSampleFormat>(iframe->format),
+                       iframe->channel_layout, static_cast<AVSampleFormat>(iframe->format),
                        iframe->sample_rate,
                        0, nullptr
                       );
@@ -115,7 +116,7 @@ swr_result create_swr(const codec_context_ptr &codec_ctx, int stream_index) {
     }
 
     packet_ptr packet = make_packet();
-//    av_init_packet(packet.get());
+    av_init_packet(packet.get());
     packet->stream_index = stream_index;
 
     return ok(std::make_tuple(ctx, oframe, iframe, packet));
