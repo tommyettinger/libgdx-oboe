@@ -50,3 +50,12 @@ android {
         }
     }
 }
+
+tasks.getByName("preBuild").doFirst {
+    copy {
+        from("changes") {
+            include("avconfig.h")
+        }
+        into(file("dependencies/ffmpeg/libavutil/"))
+    }
+}
