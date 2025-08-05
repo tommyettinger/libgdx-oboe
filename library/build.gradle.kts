@@ -2,6 +2,7 @@ plugins {
     id("kotlin-android")
     id("maven-publish")
     id("com.android.library")
+    id("com.vanniktech.maven.publish")
 }
 
 dependencies {
